@@ -30,6 +30,9 @@ pip install PyQt5
 
 ---
 
+## Installation
+
+
 ## 🧪 Example Usage
 
 ```python
