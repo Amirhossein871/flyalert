@@ -191,12 +191,6 @@ class FlyAlert(QDialog):
 
         super().exec_()
 
-    def accept_def(self):
-        self.accept()
-
-    def reject_def(self):
-        self.reject()
-
 
 class MinimalFlyAlert(FlyAlert):
     def __init__(self, config):
@@ -241,14 +235,3 @@ class MinimalFlyAlert(FlyAlert):
     def start_auto_close_timer(self):
         if self.auto_close_time:
             QTimer.singleShot(self.auto_close_time, self.close_animation)
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    alert = FlyAlert({
-        'icon': 'success',
-        'ConfirmButton': True,
-    })
-
-    alert.show()
-    sys.exit(app.exec_())

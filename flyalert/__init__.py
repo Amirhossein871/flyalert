@@ -1,1 +1,1 @@
-from .FlyAlert import *
+from .FlyAlert import FlyAlert, MinimalFlyAlert
