@@ -14,7 +14,6 @@ It also includes a compact version (`MinimalFlyAlert`) for quick notifications t
 - 🧭 Flexible positioning (center, top-left, top-right, bottom-left, bottom-right)
 - 🪟 Frameless and translucent window with drop shadow
 - ⏱ `MinimalFlyAlert` supports auto-close timer and close button
-- 🧩 `accept_def()` and `reject_def()` helper methods for flexible signal connections
 
 ---
 
