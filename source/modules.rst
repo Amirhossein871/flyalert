@@ -1,7 +1,0 @@
-flyalert
-========
-
-.. toctree::
-   :maxdepth: 4
-
-   flyalert

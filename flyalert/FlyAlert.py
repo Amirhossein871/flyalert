@@ -239,7 +239,7 @@ class MinimalFlyAlert(FlyAlert):
         super().__init__(config)
         self.position = config.get("position", "center")
         self.auto_close_time = config.get("auto_close_time", 5000)  # Default to 5 seconds
-        self.setFixedSize(400, 80)
+        self.setFixedSize(410, 90)
 
         self.init_ui()
         self.start_auto_close_timer()
@@ -254,27 +254,22 @@ class MinimalFlyAlert(FlyAlert):
         - A **close button** allowing manual dismissal.
         """
         self.container = QWidget(self)
-        self.container.setGeometry(0, 0, 400, 80)
+        self.container.setGeometry(10, 10, 390, 70)
+        self.container.setStyleSheet("background-color: white; border-radius: 10px;")
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(24)
-        shadow.setColor(QColor(0, 0, 0, 80))
+        shadow.setColor(QColor(0, 0, 0, 40))
         shadow.setOffset(0, 4)
         self.container.setGraphicsEffect(shadow)
-        self.container.setStyleSheet("background-color: white; border-radius: 10px;")
-
-        # Define layout structure
         layout = QGridLayout(self.container)
         layout.setContentsMargins(10, 10, 10, 10)
 
-        # Icon for alert type
         icon_label = QLabel(self.ICONS.get(self.config.get("icon", "info"), 'ℹ️'))
         icon_label.setFont(QFont("Arial", 32))
 
-        # Message label
         message_label = QLabel(self.config.get("message", "Default Message"))
         message_label.setFont(QFont("Arial", 14))
 
-        # Close button
         close_button = QPushButton("✖")
         close_button.setFont(QFont("Arial", 24))
         close_button.setStyleSheet("""
@@ -289,7 +284,6 @@ class MinimalFlyAlert(FlyAlert):
         """)
         close_button.clicked.connect(self.close_animation)
 
-        # Add widgets to layout
         layout.addWidget(icon_label, 0, 0)
         layout.addWidget(message_label, 0, 1)
         layout.addWidget(close_button, 0, 2)
