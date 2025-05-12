@@ -60,4 +60,4 @@ Here is a basic usage example:
    :maxdepth: 2
    :caption: Contents:
 
-   modules
+   flyalert

@@ -177,25 +177,22 @@ class FlyAlert(QDialog):
         Displays the alert at the predefined position on the screen.
         """
         if parent_window:
-            # محاسبه موقعیت نسبت به پنجره والد
-            parent_geometry = parent_window.geometry()
+            parent_pos = parent_window.mapToGlobal(parent_window.rect().topLeft())
 
             positions = {
-                "top-right": (parent_geometry.right() - self.width() - 20,
-                              parent_geometry.top() + 20),
-                "top-left": (parent_geometry.left() + 20,
-                             parent_geometry.top() + 20),
-                "bottom-right": (parent_geometry.right() - self.width() - 20,
-                                 parent_geometry.bottom() - self.height() - 20),
-                "bottom-left": (parent_geometry.left() + 20,
-                                parent_geometry.bottom() - self.height() - 20),
-                "center": (parent_geometry.center().x() - self.width() // 2,
-                           parent_geometry.center().y() - self.height() // 2)
+                "top-right": (parent_pos.x() + parent_window.width() - self.width() - 20,
+                              parent_pos.y() + 20),
+                "top-left": (parent_pos.x() + 20, parent_pos.y() + 20),
+                "bottom-right": (parent_pos.x() + parent_window.width() - self.width() - 20,
+                                 parent_pos.y() + parent_window.height() - self.height() - 20),
+                "bottom-left": (parent_pos.x() + 20,
+                                parent_pos.y() + parent_window.height() - self.height() - 20),
+                "center": (parent_pos.x() + (parent_window.width() - self.width()) // 2,
+                           parent_pos.y() + (parent_window.height() - self.height()) // 2)
             }
         else:
             screen = QApplication.primaryScreen()
             available_geometry = screen.availableGeometry()
-
             positions = {
                 "top-right": (available_geometry.width() - self.width() - 20, 20),
                 "top-left": (20, 20),
