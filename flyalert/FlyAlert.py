@@ -255,6 +255,11 @@ class MinimalFlyAlert(FlyAlert):
         """
         self.container = QWidget(self)
         self.container.setGeometry(0, 0, 400, 80)
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(24)
+        shadow.setColor(QColor(0, 0, 0, 80))
+        shadow.setOffset(0, 4)
+        self.container.setGraphicsEffect(shadow)
         self.container.setStyleSheet("background-color: white; border-radius: 10px;")
 
         # Define layout structure
