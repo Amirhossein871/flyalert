@@ -293,7 +293,7 @@ class MinimalFlyAlert(FlyAlert):
         Starts a countdown timer to close the alert automatically.
 
         If `auto_close_time` is set, the alert will fade out and close after
-        the specified time in milliseconds.
+        the specified time in milliseconds
         """
         if self.auto_close_time:
             QTimer.singleShot(self.auto_close_time, self.close_animation)
