@@ -32,7 +32,6 @@ pip install PyQt5
 
 ## Installation
 
-
 ## 🧪 Example Usage
 
 ```python
@@ -77,14 +76,15 @@ app.exec_()
 | `position`             | str      | Window position: top-left, top-right, bottom-left, etc. | "center"          |
 | `ConfirmButton`        | bool     | Show confirm button                                     | True              |
 | `ConfirmButtonText`    | str      | Text of confirm button                                  | "Confirm Button"  |
-| `ConfirmButtonColor`   | str      | Background color of confirm button                      | "#4CAF50"         |
+| `ConfirmButtonColor`   | str      | Background color of confirm button                      | "green"           |
 | `ConfirmButtonClicked` | function | Callback function when confirm is clicked               | `self.accept()`   |
 | `CancelButton`         | bool     | Show cancel button                                      | False             |
 | `CancelButtonText`     | str      | Text of cancel button                                   | "Cancel Button"   |
-| `CancelButtonColor`    | str      | Background color of cancel button                       | "#F44336"         |
+| `CancelButtonColor`    | str      | Background color of cancel button                       | "red"             |
 | `CancelButtonClicked`  | function | Callback function when cancel is clicked                | `self.reject()`   |
 | `InfoButton`           | bool     | Show info button                                        | False             |
 | `InfoButtonText`       | str      | Text of info button                                     | "Info Button"     |
-| `InfoButtonColor`      | str      | Background color of info button                         | "#2196F3"         |
+| `InfoButtonColor`      | str      | Background color of info button                         | "blue"            |
 | `InfoButtonClicked`    | function | Callback function when info is clicked                  | `self.accept()`   |
-| `auto_close_time`      | int      | (MinimalFlyAlert only) milliseconds before auto-close   | 5000              |
+| `timer`                | int      | (MinimalFlyAlert only) milliseconds before auto-close   | 5000              |
+| `rtl`                  | bool     | RTL (right-to-left) buttons layout                      | False             |

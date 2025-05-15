@@ -18,31 +18,6 @@ import sys
 
 
 class FlyAlert(QDialog):
-    """
-    A highly customizable animated alert dialog for PyQt5 applications.
-
-    This class provides a flexible notification system with smooth animations, configurable
-    buttons, and positional settings. Ideal for displaying success, error, warning, and
-    informational alerts in a clean and visually appealing manner.
-
-    Attributes:
-        ICONS (dict): A dictionary mapping alert types to their corresponding emoji icons.
-        config (dict): A dictionary containing alert properties such as title, message,
-                       icon type, and button configurations.
-        position (str): Defines the alert position on the screen. Can be 'top-left',
-                        'top-right', 'bottom-left', 'bottom-right', or 'center'.
-        opacity_anim (QPropertyAnimation): Handles the fade-in animation.
-        close_anim (QPropertyAnimation): Handles the fade-out animation.
-
-    Methods:
-        init_ui(): Sets up the graphical elements of the alert window.
-        add_button(layout, button_key, default_color, default_action): Creates and
-            adds buttons based on the configuration.
-        start_animation(): Starts the fade-in effect upon opening the dialog.
-        close_animation(): Starts the fade-out effect and closes the alert.
-        show(): Displays the alert at the specified position.
-    """
-
     ICONS = {
         'success': '✅',
         'error': '❌',
@@ -52,86 +27,109 @@ class FlyAlert(QDialog):
     }
 
     def __init__(self, config: dict):
-        """
-        Initializes a FlyAlert dialog with custom settings.
-
-        Args:
-            config (dict): A dictionary defining alert properties such as message text,
-                           title, button visibility, colors, and actions.
-        """
         super().__init__()
         self.config = config
         self.position = config.get("position", "center")
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setFixedSize(400, 300)
+        self.auto_close_time = config.get("timer")
 
         self.opacity_anim = None
-        self.close_anim = None  # Will be initialized when closing
+        self.close_anim = None
         self.init_ui()
         self.start_animation()
+        self.start_auto_close_timer()
 
     def init_ui(self):
-        """
-        Configures the alert's user interface, including layout structure, styling,
-        icon, title, message, and action buttons.
-        """
         self.container = QWidget(self)
         self.container.setGeometry(10, 10, 380, 280)
-
-        # Apply drop shadow effect for a modern UI appearance
         shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(24)
-        shadow.setColor(QColor(0, 0, 0, 80))
+        shadow.setBlurRadius(18)
+        shadow.setColor(QColor(0, 0, 0, 100))
         shadow.setOffset(0, 4)
         self.container.setGraphicsEffect(shadow)
         self.container.setStyleSheet("background-color: white; border-radius: 15px;")
 
-        layout = QVBoxLayout(self.container)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(15)
+        main_layout = QVBoxLayout(self.container)
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(15)
 
-        # Add icon
+        if self.config.get("close_button", False):
+            close_btn = QPushButton("×")
+            close_btn.setStyleSheet("""
+                QPushButton {
+                    background: transparent;
+                    color: #999;
+                    font-size: 28px;
+                    font-weight: bold;
+                    border: none;
+                    padding: 0;
+                    min-width: 24px;
+                    max-width: 24px;
+                    min-height: 24px;
+                    max-height: 24px;
+                }
+                QPushButton:hover {
+                    color: #666;
+                }
+                QPushButton:pressed {
+                    color: #333;
+                }
+            """)
+            close_btn.clicked.connect(self.close_animation)
+
+            close_layout = QHBoxLayout()
+            close_layout.addStretch()
+            close_layout.addWidget(close_btn)
+            close_layout.setContentsMargins(0, 0, 0, 10)
+            main_layout.addLayout(close_layout)
+
+        content_layout = QVBoxLayout()
+        content_layout.setSpacing(15)
+
         icon_label = QLabel(self.ICONS.get(self.config.get("icon", "info"), 'ℹ️'))
         icon_label.setAlignment(Qt.AlignCenter)
         icon_label.setFont(QFont("Arial", 50))
-        layout.addWidget(icon_label)
+        content_layout.addWidget(icon_label)
 
-        # Add title
         title_label = QLabel(self.config.get("title", "Default Title"))
         title_label.setFont(QFont("Arial", 14, QFont.Bold))
         title_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(title_label)
+        content_layout.addWidget(title_label)
 
-        # Add message text
         message_label = QLabel(self.config.get("message", "Default Message"))
         message_label.setFont(QFont("Arial", 12))
         message_label.setAlignment(Qt.AlignCenter)
         message_label.setWordWrap(True)
-        layout.addWidget(message_label)
+        content_layout.addWidget(message_label)
 
-        # Create button layout
+        main_layout.addLayout(content_layout)
+
         button_layout = QHBoxLayout()
         button_layout.setSpacing(10)
+        if self.config.get("rtl", False):
+            self.add_button(button_layout, "ConfirmButton", "#4CAF50", self.accept)
+            self.add_button(button_layout, "InfoButton", "#2196F3", self.accept)
+            self.add_button(button_layout, "CancelButton", "#F44336", self.reject)
+        else:
+            self.add_button(button_layout, "CancelButton", "#F44336", self.reject)
+            self.add_button(button_layout, "InfoButton", "#2196F3", self.accept)
+            self.add_button(button_layout, "ConfirmButton", "#4CAF50", self.accept)
 
-        # Add buttons dynamically based on configuration
-        self.add_button(button_layout, "ConfirmButton", "#4CAF50", self.accept)
-        self.add_button(button_layout, "CancelButton", "#F44336", self.reject)
-        self.add_button(button_layout, "InfoButton", "#2196F3", self.accept)
-
-        layout.addLayout(button_layout)
+        main_layout.addLayout(button_layout)
 
     def add_button(self, layout: QHBoxLayout, button_key: str, default_color: str, default_action):
-        """
-        Dynamically adds a button to the alert based on the provided configuration.
+        def get_hover_style(bg_color):
+            color = QColor(bg_color)
+            hover_color = color.lighter(80)
+            return hover_color.name()
 
-        Args:
-            layout (QHBoxLayout): The layout to which the button will be added.
-            button_key (str): The configuration key representing the button settings.
-            default_color (str): The default color of the button.
-            default_action (function): The function to be executed when the button is clicked.
-        """
         if self.config.get(button_key, False):
+            def btn_clicked():
+                function = self.config.get(f"{button_key}Clicked", default_action)
+                self.close_animation(function)
+
             btn = QPushButton(self.config.get(f"{button_key}Text", f"{button_key.replace('Button', '')}"))
             btn.setStyleSheet(f"""
                     QPushButton {{
@@ -140,18 +138,16 @@ class FlyAlert(QDialog):
                         padding: 8px 16px;
                         border: none;
                         border-radius: 8px;
+                        transition: all 0.3s ease;
                     }}
                     QPushButton:hover {{
-                        background-color: {default_color};
+                        background-color: {get_hover_style(self.config.get(f"{button_key}Color", default_color))};
                     }}
                 """)
-            btn.clicked.connect(self.config.get(f"{button_key}Clicked", default_action))
+            btn.clicked.connect(btn_clicked)
             layout.addWidget(btn)
 
     def start_animation(self):
-        """
-        Initiates the fade-in animation when the alert is displayed.
-        """
         self.setWindowOpacity(0.0)
         self.opacity_anim = QPropertyAnimation(self, b"windowOpacity")
         self.opacity_anim.setDuration(300)
@@ -160,22 +156,20 @@ class FlyAlert(QDialog):
         self.opacity_anim.setEasingCurve(QEasingCurve.OutQuad)
         self.opacity_anim.start()
 
-    def close_animation(self):
-        """
-        Initiates the fade-out animation and closes the alert after the animation completes.
-        """
+    def close_animation(self, function=None):
         self.close_anim = QPropertyAnimation(self, b"windowOpacity")
         self.close_anim.setDuration(300)
         self.close_anim.setStartValue(1.0)
         self.close_anim.setEndValue(0.0)
         self.close_anim.setEasingCurve(QEasingCurve.InQuad)
         self.close_anim.start()
-        QTimer.singleShot(300, self.close)
+        QTimer.singleShot(300, function or self.close)
+
+    def start_auto_close_timer(self):
+        if self.auto_close_time:
+            QTimer.singleShot(self.auto_close_time, self.close_animation)
 
     def show(self, parent_window=None):
-        """
-        Displays the alert at the predefined position on the screen.
-        """
         if parent_window:
             parent_pos = parent_window.mapToGlobal(parent_window.rect().topLeft())
 
@@ -206,59 +200,26 @@ class FlyAlert(QDialog):
         pos_x, pos_y = positions.get(self.position, positions["center"])
         self.move(pos_x, pos_y)
 
-        super().exec_()
+        return super().exec_()
 
 
 class MinimalFlyAlert(FlyAlert):
-    """
-    A lightweight variant of FlyAlert with automatic closing.
-
-    This class provides a minimal popup alert designed for brief notifications.
-    Unlike the standard FlyAlert, it has a **smaller size** and can automatically
-    disappear after a set duration.
-
-    Attributes:
-        position (str): Defines where the alert appears ('top-left', 'top-right',
-                        'bottom-left', 'bottom-right', or 'center'). Default: "center".
-        auto_close_time (int): The time in milliseconds before the alert automatically closes.
-                               Default: 5000ms (5 seconds).
-
-    Methods:
-        init_ui(): Sets up the graphical elements of the minimal alert.
-        start_auto_close_timer(): Starts a timer that automatically closes the alert.
-    """
-
     def __init__(self, config: dict):
-        """
-        Initializes a MinimalFlyAlert with custom settings.
-
-        Args:
-            config (dict): A dictionary defining alert properties such as message text,
-                           title, icon type, and auto-close time.
-        """
         super().__init__(config)
+        self.auto_close_time = self.config.get("timer", 2000)
         self.position = config.get("position", "center")
-        self.auto_close_time = config.get("auto_close_time", 5000)  # Default to 5 seconds
         self.setFixedSize(410, 90)
 
         self.init_ui()
         self.start_auto_close_timer()
 
     def init_ui(self):
-        """
-        Configures the user interface for the minimal alert.
-
-        The UI consists of:
-        - An **icon** representing the alert type (success, error, warning, etc.).
-        - A **message label** displaying the alert text.
-        - A **close button** allowing manual dismissal.
-        """
         self.container = QWidget(self)
         self.container.setGeometry(10, 10, 390, 70)
         self.container.setStyleSheet("background-color: white; border-radius: 10px;")
         shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(24)
-        shadow.setColor(QColor(0, 0, 0, 40))
+        shadow.setBlurRadius(18)
+        shadow.setColor(QColor(0, 0, 0, 100))
         shadow.setOffset(0, 4)
         self.container.setGraphicsEffect(shadow)
         layout = QGridLayout(self.container)
@@ -289,11 +250,5 @@ class MinimalFlyAlert(FlyAlert):
         layout.addWidget(close_button, 0, 2)
 
     def start_auto_close_timer(self):
-        """
-        Starts a countdown timer to close the alert automatically.
-
-        If `auto_close_time` is set, the alert will fade out and close after
-        the specified time in milliseconds
-        """
         if self.auto_close_time:
             QTimer.singleShot(self.auto_close_time, self.close_animation)

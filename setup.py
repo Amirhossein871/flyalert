@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="flyalert",
-    version="1.2",
+    version="2.0.0",
     description="Custom animated alerts and dialogs for PyQt5.",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
