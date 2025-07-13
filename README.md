@@ -32,6 +32,10 @@ pip install PyQt5
 
 ## Installation
 
+```bash
+pip install flyalert
+```
+
 ## 🧪 Example Usage
 
 ```python
